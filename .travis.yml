@@ -1,11 +1,11 @@
 
 language: python
 python:
-	- "3.9"
+  - "3.9"
 install:
-	- pip install -e .
-	- pip install pytest-cov codecov
+  - pip install -e .
+  - pip install pytest-cov codecov
 script:
-	- pytest --cov=src tests
+  - pytest --cov=src tests
 after_success:
-	- codecov
+  - codecov
