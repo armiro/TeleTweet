@@ -133,3 +133,6 @@ dmypy.json
 creds.json
 twitter_creds.json
 telegram_creds.json
+
+# other directories
+media/*
