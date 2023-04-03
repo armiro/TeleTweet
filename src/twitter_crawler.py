@@ -6,6 +6,11 @@ from PIL import Image
 import wget
 
 
+MEDIA_PATH = '../media/'
+CREDS_FILE = '../twitter_creds.json'
+USR_NAME = 'MariusCrypt0'
+
+
 def authenticate(creds_path):
     """
     read the credentials and authenticate to Twitter
@@ -46,8 +51,8 @@ def download_media(tweet, is_retweet):
     for idx, media_file in enumerate(media_files):
         media_url = media_file['media_url']
         media_name = tweet.id_str + '_' + str(idx) + media_url[media_url.rfind('.'):]
-        img = wget.download(url=media_url, out=media_name)
-        print(f'downloded image no. {idx+1} successfully!')
+        _ = wget.download(url=media_url, out=MEDIA_PATH + media_name)
+        print(f'downloaded image no. {idx+1} successfully!')
 
     if not(len(media_files)): print('no downloadable images found!')
     return None
@@ -68,8 +73,7 @@ def extract_full_text(tweet, is_retweet):
 
 
 def main():
-    USR_NAME = 'MariusCrypt0'
-    api = authenticate(creds_path='../twitter_creds.json')
+    api = authenticate(creds_path=CREDS_FILE)
     timeline = api.user_timeline(screen_name=USR_NAME, count=50, exclude_replies=True, include_rts=True,
                                  tweet_mode='extended')
 
