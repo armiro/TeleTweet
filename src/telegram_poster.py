@@ -15,7 +15,20 @@ def get_bot(creds_path):
     return telegram.Bot(token=api_token)
 
 
-async def post_tweet(bot, channel_id, time=None, tags=None, symbols=None, author=None, text=None, attachments=None):
-    await bot.send_message(chat_id=channel_id, text=time)
-    await bot.send_message(chat_id=channel_id, text=text)
+async def post_tweet(bot, channel_id, time, author, text, has_media):
+    """
+    documentation: https://docs.python-telegram-bot.org/en/stable/telegram.bot.html
+    :param bot: telegram bot
+    :param channel_id: string
+    :param time: string
+    :param author: string
+    :param text: string
+    :param has_media: set(int, string)
+    :return: None
+    """
+    full_text = f'{time} \n\n{author} \n\n{text}'
+    if has_media[0]:
+        await bot.send_photo(chat_id=channel_id, photo=has_media[1], caption=full_text)
+    else:
+        await bot.send_message(chat_id=channel_id, text=full_text)
 
