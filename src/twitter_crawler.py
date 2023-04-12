@@ -1,14 +1,6 @@
 import tweepy
 import json
-import numpy as np
-import pandas as pd
-from PIL import Image
 import wget
-
-
-MEDIA_PATH = '../media/'
-CREDS_FILE = '../twitter_creds.json'
-USR_NAME = 'MariusCrypt0'
 
 
 def authenticate(creds_path):
@@ -42,7 +34,7 @@ def extract_tags_and_symbols(tweet, is_retweet):
     return tags, symbols
 
 
-def download_media(tweet, is_retweet):
+def download_media(tweet, media_path, is_retweet):
     if is_retweet:
         media_files = tweet.retweeted_status.entities.get('media', [])
     else:
@@ -51,47 +43,25 @@ def download_media(tweet, is_retweet):
     for idx, media_file in enumerate(media_files):
         media_url = media_file['media_url']
         media_name = tweet.id_str + '_' + str(idx) + media_url[media_url.rfind('.'):]
-        _ = wget.download(url=media_url, out=MEDIA_PATH + media_name)
+        _ = wget.download(url=media_url, out=media_path + media_name)
         print(f'downloaded image no. {idx+1} successfully!')
 
     if not(len(media_files)): print('no downloadable images found!')
-    return None
+    return (0, None) if not(len(media_files)) else (len(media_files), media_path+media_name)
 
 
-def print_author(tweet, is_retweet):
+def get_author_name(tweet, is_retweet):
     if is_retweet:
         original_author_name = tweet.entities.get('user_mentions')[0].get('name')
         original_author_handle = tweet.entities.get('user_mentions')[0].get('screen_name')
-        print('RT:', original_author_name + ' @' + original_author_handle)
+        return f'RT from: {original_author_name} @{original_author_handle}'
     else:
-        print('Originally tweeted by:', tweet.author.name + ' @' + tweet.author.screen_name)
-    return None
+        return f'Tweeted by: {tweet.author.name} @{tweet.author.screen_name}'
 
 
 def extract_full_text(tweet, is_retweet):
     return tweet.retweeted_status.full_text if is_retweet else tweet.full_text
 
 
-def main():
-    api = authenticate(creds_path=CREDS_FILE)
-    timeline = api.user_timeline(screen_name=USR_NAME, count=50, exclude_replies=True, include_rts=True,
-                                 tweet_mode='extended')
-
-    for status in timeline:
-        print('--------------------------------------')
-        is_retweet = status.full_text.startswith('RT')
-        status_time = extract_status_time(status)
-        print('tweet posted at: ', status_time)
-        tags, symbols = extract_tags_and_symbols(status, is_retweet=is_retweet)
-        print('tweet has these tags:', tags)
-        print('tweet has these symbols:', symbols)
-        print_author(status, is_retweet=is_retweet)
-        text = extract_full_text(status, is_retweet=is_retweet)
-        print('full tweet text: \n', text)
-        download_media(status, is_retweet=is_retweet)
-        print('--------------------------------------')
-        break
 
 
-if __name__ == '__main__':
-    main()
