@@ -36,15 +36,19 @@ def extract_tags_and_symbols(tweet, is_retweet):
 
 def download_media(tweet, media_path, is_retweet):
     if is_retweet:
-        media_files = tweet.retweeted_status.entities.get('media', [])
+        media_files = tweet.retweeted_status.extended_entities.get('media', [])
     else:
-        media_files = tweet.entities.get('media', [])
-
+        media_files = tweet.extended_entities.get('media', [])
     for idx, media_file in enumerate(media_files):
-        media_url = media_file['media_url']
+        if media_file.get('type', []) == 'video':
+            media_url = media_file['video_info']['variants'][0]['url']
+            print(media_file['video_info']['variants'][0])
+        else:
+            media_url = media_file['media_url']
         media_name = tweet.id_str + '_' + str(idx) + media_url[media_url.rfind('.'):]
-        _ = wget.download(url=media_url, out=media_path + media_name)
-        print(f'downloaded image no. {idx+1} successfully!')
+        # print(media_name)
+        # _ = wget.download(url=media_url, out=media_path + media_name)
+        # print(f'downloaded image no. {idx+1} successfully!')
 
     if not(len(media_files)): print('no downloadable images found!')
     return (0, None) if not(len(media_files)) else (len(media_files), media_path+media_name)
