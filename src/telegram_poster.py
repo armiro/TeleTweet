@@ -28,7 +28,14 @@ async def post_tweet(bot, channel_id, time, author, text, has_media):
     """
     full_text = f'{time} \n\n{author} \n\n{text}'
     if has_media[0]:
-        await bot.send_photo(chat_id=channel_id, photo=has_media[1], caption=full_text)
+        if has_media[1] == 'photo':
+            await bot.send_photo(chat_id=channel_id, photo=has_media[2], caption=full_text, parse_mode='html')
+        elif has_media[1] == 'video':
+            await bot.send_video(chat_id=channel_id, video=has_media[2], caption=full_text, parse_mode='html')
+        elif has_media[1] == 'animated_gif':
+            await bot.send_animation(chat_id=channel_id, animation=has_media[2], caption=full_text, parse_mode='html')
+        else:
+            raise TypeError("type of the attachment media file is unknown")
     else:
-        await bot.send_message(chat_id=channel_id, text=full_text)
+        await bot.send_message(chat_id=channel_id, text=full_text, parse_mode='html', disable_web_page_preview=True)
 
