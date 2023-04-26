@@ -54,26 +54,33 @@ def download_media(tweet, media_path, is_retweet):
             media_url = media_file['media_url']
         media_name = tweet.id_str + '_' + str(idx) + media_url[media_url.rfind('.'):]
         _ = wget.download(url=media_url, out=media_path + media_name)
-        print(f'downloaded media file no. {idx+1} successfully!')
+        print(f'downloaded media file no. {idx + 1} successfully!')
 
-    if not(len(media_files)): print('no downloadable media files found!')
-    return (0, None, None) if not(len(media_files)) else (len(media_files), media_type, media_path+media_name)
+    if not (len(media_files)): print('no downloadable media files found!')
+    return (0, None, None) if not (len(media_files)) else (len(media_files), media_type, media_path + media_name)
 
 
 def get_author_name(tweet, is_retweet):
     if is_retweet:
         author_name = tweet.entities.get('user_mentions')[0].get('name')
         author_handle = tweet.entities.get('user_mentions')[0].get('screen_name')
-        rt_or_qt = 'QT' if tweet.is_quote_status else 'RT'
-        return f'[{rt_or_qt}] {author_name} <a href="https://twitter.com/{author_handle}">@{author_handle}</a>'
+        return f'[RT] {author_name} <a href="https://twitter.com/{author_handle}">@{author_handle}</a>'
+    elif tweet.is_quote_status:
+        return f'[QT from {tweet.quoted_status.user.name} <a href="https://twitter.com/{tweet.quoted_status.user.screen_name}">@{tweet.quoted_status.user.screen_name}</a>]'
     else:
         return f'{tweet.author.name} <a href="https://twitter.com/{tweet.author.screen_name}">@{tweet.author.screen_name}</a>'
 
 
-def extract_full_text(tweet, is_retweet):
-    return tweet.retweeted_status.full_text if is_retweet else tweet.full_text
+def extract_and_polish_text(tweet, is_retweet):
+    full_text = tweet.retweeted_status.full_text if is_retweet else tweet.full_text  # extract full text
+    urls = tweet.retweeted_status.entities.get('urls', [])
+    media_urls = tweet.retweeted_status.entities.get('media', [])
 
+    for idx, url_dict in enumerate(urls):  # replace links with embedded hyperlinks
+        if full_text.find(url_dict['url']) >= 0:
+            full_text = full_text.replace(url_dict['url'], f'\n\n<a href="{urls[idx]["expanded_url"]}">link</a>')
+    for url_dict in media_urls:  # remove links to attached media
+        if full_text.find(url_dict['url']) >= 0:
+            full_text = full_text.replace(url_dict['url'], '')
 
-def append_tweet_link(tweet_text):
-    print(tweet_text)
-
+    return full_text
