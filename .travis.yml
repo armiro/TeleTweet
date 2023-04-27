@@ -3,7 +3,7 @@ language: python
 python:
   - "3.9"
 install:
-  - pip install -e .
+  - pip install -r requirements.txt
   - pip install pytest-cov codecov
 script:
   - pytest --cov=src tests
